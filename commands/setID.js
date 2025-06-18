@@ -2,22 +2,21 @@ const { SlashCommandBuilder } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 
-// JSONファイルの保存先
-const DATA_FILE_PATH = path.join(__dirname, '../data/data.json');
+// 保存先ファイル
+const filePath = path.join(__dirname, '../data/userGameData.json');
 
-// データを読み込む（なければ空のオブジェクト）
-let userGameData = {};
-if (fs.existsSync(DATA_FILE_PATH)) {
-	try {
-		userGameData = JSON.parse(fs.readFileSync(DATA_FILE_PATH, 'utf-8'));
-	} catch (error) {
-		console.error('データの読み込みに失敗しました:', error);
-	}
+// 既存データの読み込み（なければ空）
+let userGameData = new Map();
+if (fs.existsSync(filePath)) {
+	const raw = fs.readFileSync(filePath, 'utf8');
+	const json = JSON.parse(raw);
+	userGameData = new Map(Object.entries(json));
 }
 
-// データ保存関数
-function saveData() {
-	fs.writeFileSync(DATA_FILE_PATH, JSON.stringify(userGameData, null, 2), 'utf-8');
+// 保存処理
+function saveUserData(map) {
+	const obj = Object.fromEntries(map);
+	fs.writeFileSync(filePath, JSON.stringify(obj, null, 2), 'utf8');
 }
 
 module.exports = {
@@ -47,23 +46,17 @@ module.exports = {
 		const gameID = interaction.options.getString('gameid');
 		const userID = interaction.user.id;
 
-		// ユーザーが初めてなら空のオブジェクトを作る
-		if (!userGameData[userID]) {
-			userGameData[userID] = {};
-		}
+		userGameData.set(userID, {
+			gameName,
+			gameID,
+			username: interaction.user.username, // 任意：表示名も保存
+		});
 
-		// ゲーム名に対応したIDを保存
-		userGameData[userID][gameName] = gameID;
-
-		// 保存
-		saveData();
+		saveUserData(userGameData); // 🔁 保存！
 
 		await interaction.reply({
 			content: `ゲーム「${gameName}」のID「${gameID}」を保存しました！`,
 			ephemeral: true
 		});
 	},
-
-	// 他のコマンドから読み込めるように
-	userGameData
 };
