@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { userGameData } = require('./setid.js'); // setidからMapをインポート
+const { userGameData } = require('./setID.js'); // setidからMapをインポート
 
 module.exports = {
 	data: new SlashCommandBuilder()
