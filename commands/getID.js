@@ -1,32 +1,55 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { userGameData } = require('./setID.js'); // setidからMapをインポート
+const { userGameData } = require('./setID.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('getid')
-		.setDescription('指定したユーザーのゲームIDを表示します')
+		.setDescription('指定したユーザーとゲームからゲームIDを表示します')
 		.addUserOption(option =>
 			option.setName('target')
 				.setDescription('ゲームIDを確認したいユーザーを選んでください')
 				.setRequired(true)
+		)
+		.addStringOption(option =>
+			option.setName('gamename')
+				.setDescription('対象のゲームを選んでください')
+				.setRequired(true)
+				.addChoices(
+					{ name: 'RiotID', value: 'RiotID' },
+					{ name: 'Steam', value: 'Steam' },
+					{ name: '原神', value: '原神' },
+					{ name: 'EpicGames', value: 'EpicGames' },
+					{ name: 'ubisoft', value: 'ubisoft' },
+				)
 		),
 
 	async execute(client, interaction) {
 		const targetUser = interaction.options.getUser('target');
-		const targetTag = targetUser.tag;
+		const gameName = interaction.options.getString('gamename');
+		const userID = targetUser.id;
 
-		const data = userGameData.get(targetTag);
-
-		if (data) {
+		if (!userGameData.has(userID)) {
 			await interaction.reply({
-				content: `🎮 ユーザー: **${targetTag}**\nゲーム名: **${data.gameName}**\nゲームID: **${data.gameID}**`,
-				ephemeral: false
+				content: `❌ ユーザー <@${userID}> はまだIDを登録していません。`,
+				ephemeral: false,
 			});
-		} else {
-			await interaction.reply({
-				content: `❌ ユーザー「${targetTag}」のゲーム情報は登録されていません。`,
-				ephemeral: false
-			});
+			return;
 		}
+
+		const gameIDs = userGameData.get(userID);
+		const gameID = gameIDs[gameName];
+
+		if (!gameID) {
+			await interaction.reply({
+				content: `❌ ユーザー <@${userID}> はゲーム「${gameName}」のIDを登録していません。`,
+				ephemeral: false,
+			});
+			return;
+		}
+
+		await interaction.reply({
+			content: `✅ ユーザー <@${userID}> のゲーム「${gameName}」のIDは「${gameID}」です！`,
+			ephemeral: false,
+		});
 	},
 };
