@@ -1,26 +1,46 @@
 const { SlashCommandBuilder } = require('discord.js');
 
-// ユーザーID → ゲームIDを保存するMap（グローバル共有用）
-const userGameIDs = new Map();
+// ユーザーID → { gameName, gameID } を保存するMap
+const userGameData = new Map();
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('setid')
-		.setDescription('あなたのゲームIDを保存します')
+		.setDescription('あなたのゲーム名とゲームIDを保存するよ')
+		.addStringOption(option =>
+			option.setName('gamename')
+				.setDescription('保存するゲーム名を選んでください')
+				.setRequired(true)
+				.addChoices(
+					{ name: 'Apex Legends', value: 'Apex Legends' },
+					{ name: 'Valorant', value: 'Valorant' },
+					{ name: 'Minecraft', value: 'Minecraft' },
+					{ name: 'Fortnite', value: 'Fortnite' },
+					{ name: 'Overwatch', value: 'Overwatch' },
+				)
+		)
 		.addStringOption(option =>
 			option.setName('gameid')
-				.setDescription('保存するゲームIDを入力してください')
-				.setRequired(true)),
+				.setDescription('あなたのゲーム内IDを入力してください')
+				.setRequired(true)
+		),
 
 	async execute(client, interaction) {
+		const gameName = interaction.options.getString('gamename');
 		const gameID = interaction.options.getString('gameid');
 		const userID = interaction.user.id;
 
-		userGameIDs.set(userID, gameID);
+		userGameData.set(userID, {
+			gameName,
+			gameID,
+		});
 
-		await interaction.reply({ content: `あなたのゲームID「${gameID}」を保存しました！`, ephemeral: true });
+		await interaction.reply({
+			content: `ゲーム「${gameName}」のID「${gameID}」を保存しました！`,
+			ephemeral: true
+		});
 	},
 
-	// 外部からMapにアクセスできるようにexport
-	userGameIDs,
+	// 他のコマンドから使えるようにエクスポート
+	userGameData,
 };
