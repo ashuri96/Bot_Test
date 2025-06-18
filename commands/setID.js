@@ -12,11 +12,11 @@ module.exports = {
 				.setDescription('保存するゲーム名を選んでください')
 				.setRequired(true)
 				.addChoices(
-					{ name: 'Apex Legends', value: 'Apex Legends' },
-					{ name: 'Valorant', value: 'Valorant' },
-					{ name: 'Minecraft', value: 'Minecraft' },
-					{ name: 'Fortnite', value: 'Fortnite' },
-					{ name: 'Overwatch', value: 'Overwatch' },
+					{ name: 'RiotID', value: 'RiotID' },
+					{ name: 'Steam', value: 'Steam' },
+					{ name: '原神', value: '原神' },
+					{ name: 'EpicGames', value: 'EpicGames' },
+					{ name: 'ubisoft', value: 'ubisoft' },
 				)
 		)
 		.addStringOption(option =>
