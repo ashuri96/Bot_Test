@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { userGameData } = require('./idset.js');
+const setid = require('./idset.js'); // setidのuserGameDataを共有
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -26,6 +26,7 @@ module.exports = {
 		const targetUser = interaction.options.getUser('target');
 		const gameName = interaction.options.getString('gamename');
 		const userID = targetUser.id;
+		const userGameData = setid.userGameData;
 
 		if (!userGameData.has(userID)) {
 			await interaction.reply({

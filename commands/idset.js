@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 
-// ユーザーID → ゲーム名 → ゲームID を保存
+// メモリ内のデータ管理（再起動で消えます）
 const userGameData = new Map();
 
 module.exports = {
@@ -29,18 +29,16 @@ module.exports = {
 		const gameID = interaction.options.getString('gameid');
 		const userID = interaction.user.id;
 
-		// ユーザーが未登録なら新しく作る
 		if (!userGameData.has(userID)) {
 			userGameData.set(userID, {});
 		}
 
-		// 既存のゲームIDリストを取得し、該当ゲームに上書き
 		const gameIDs = userGameData.get(userID);
 		gameIDs[gameName] = gameID;
 
 		await interaction.reply({
 			content: `🎮 ゲーム「${gameName}」のID「${gameID}」を保存しました！`,
-			ephemeral: true
+			ephemeral: true,
 		});
 	},
 
