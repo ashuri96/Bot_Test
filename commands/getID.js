@@ -1,19 +1,32 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { userGameIDs } = require('./setID');
+const { userGameData } = require('./setid.js'); // setidからMapをインポート
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('getid')
-		.setDescription('あなたの保存されたゲームIDを取得します'),
+		.setDescription('指定したユーザーのゲームIDを表示します')
+		.addUserOption(option =>
+			option.setName('target')
+				.setDescription('ゲームIDを確認したいユーザーを選んでください')
+				.setRequired(true)
+		),
 
 	async execute(client, interaction) {
-		const userID = interaction.user.id;
-		const savedID = userGameIDs.get(userID);
+		const targetUser = interaction.options.getUser('target');
+		const targetTag = targetUser.tag;
 
-		if (savedID) {
-			await interaction.reply({ content: `あなたの保存されたゲームIDは「${savedID}」です！`, ephemeral: true });
+		const data = userGameData.get(targetTag);
+
+		if (data) {
+			await interaction.reply({
+				content: `🎮 ユーザー: **${targetTag}**\nゲーム名: **${data.gameName}**\nゲームID: **${data.gameID}**`,
+				ephemeral: false
+			});
 		} else {
-			await interaction.reply({ content: 'まだゲームIDが保存されていません。まずは `/setid` で登録してください。', ephemeral: true });
+			await interaction.reply({
+				content: `❌ ユーザー「${targetTag}」のゲーム情報は登録されていません。`,
+				ephemeral: false
+			});
 		}
 	},
 };
