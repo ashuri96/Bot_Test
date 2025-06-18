@@ -1,18 +1,36 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { userGameData } = require('./setID.js');
+const fs = require('fs');
+const path = require('path');
+
+// 保存データファイルのパス
+const DATA_FILE_PATH = path.join(__dirname, '../data/data.json');
+
+// JSONデータの読み込み関数
+function loadUserGameData() {
+	if (fs.existsSync(DATA_FILE_PATH)) {
+		try {
+			return JSON.parse(fs.readFileSync(DATA_FILE_PATH, 'utf-8'));
+		} catch (error) {
+			console.error('データの読み込みに失敗しました:', error);
+			return {};
+		}
+	} else {
+		return {};
+	}
+}
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('getid')
-		.setDescription('指定したユーザーとゲームからゲームIDを表示します')
+		.setDescription('他のユーザーのゲームIDを取得します')
 		.addUserOption(option =>
-			option.setName('target')
-				.setDescription('ゲームIDを確認したいユーザーを選んでください')
+			option.setName('user')
+				.setDescription('ゲームIDを知りたいユーザーを選んでください')
 				.setRequired(true)
 		)
 		.addStringOption(option =>
 			option.setName('gamename')
-				.setDescription('対象のゲームを選んでください')
+				.setDescription('取得したいゲーム名を選んでください')
 				.setRequired(true)
 				.addChoices(
 					{ name: 'RiotID', value: 'RiotID' },
@@ -24,32 +42,28 @@ module.exports = {
 		),
 
 	async execute(client, interaction) {
-		const targetUser = interaction.options.getUser('target');
+		const targetUser = interaction.options.getUser('user');
 		const gameName = interaction.options.getString('gamename');
+
+		const userGameData = loadUserGameData();
+
 		const userID = targetUser.id;
 
-		if (!userGameData.has(userID)) {
+		// 該当データの存在確認
+		if (
+			userGameData[userID] &&
+			userGameData[userID][gameName]
+		) {
+			const gameID = userGameData[userID][gameName];
 			await interaction.reply({
-				content: `❌ ユーザー <@${userID}> はまだIDを登録していません。`,
-				ephemeral: false,
+				content: `${targetUser.username}さんの「${gameName}」のIDは「${gameID}」です！`,
+				ephemeral: false
 			});
-			return;
-		}
-
-		const gameIDs = userGameData.get(userID);
-		const gameID = gameIDs[gameName];
-
-		if (!gameID) {
+		} else {
 			await interaction.reply({
-				content: `❌ ユーザー <@${userID}> はゲーム「${gameName}」のIDを登録していません。`,
-				ephemeral: false,
+				content: `${targetUser.username}さんは「${gameName}」のIDをまだ登録していません。`,
+				ephemeral: true
 			});
-			return;
 		}
-
-		await interaction.reply({
-			content: `✅ ユーザー <@${userID}> のゲーム「${gameName}」のIDは「${gameID}」です！`,
-			ephemeral: false,
-		});
-	},
+	}
 };
