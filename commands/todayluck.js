@@ -6,8 +6,9 @@ module.exports = {
 		.setDescription('今日の運勢を教えるよ')
 		.addStringOption(option =>
 			option
-				.setDescription('運勢のジャンルを選んでね')
-				.setRequired(false)
+				.setName('type')
+				.setDescription('占いたい運勢のジャンルを選んでね')
+				.setRequired(true)   // 必須にする
 				.addChoices(
 					{ name: '日常運', value: 'normal' },
 					{ name: 'ゲーマー運', value: 'gamer' },
