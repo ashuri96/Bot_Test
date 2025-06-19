@@ -23,14 +23,14 @@ module.exports = {
 
 		// 最初に「選択中...」を表示
 		await interaction.reply({
-			content: `🎲 今日やるゲームを選んでいます...`,
+			content: `🎲 今日やるゲームを選んでいます...`
 			//ephemeral: true,
 		});
 
 		// 1秒後に結果を表示
 		setTimeout(() => {
 			interaction.editReply({
-				content: `🎮 今日やるゲームは... **${selectedGame}** に決定！`,
+				content: `🎮 今日やるゲームは... **${selectedGame}** に決定！`
 				//ephemeral: true,
 			});
 		}, 1000);
