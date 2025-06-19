@@ -17,6 +17,9 @@ module.exports = {
 		),
 
 	async execute(client, interaction) {
+		// まず「占い中……」を返信（ephemeral: false で全体に表示）
+		await interaction.reply({ content: '🔮 占い中……', ephemeral: false });
+
 		// 運勢ランクごとの各種コメント（normal: 日常 / gamer: ゲーマー / pachinko: パチンカス）
 		const fortunes = [
 			{
@@ -145,6 +148,9 @@ module.exports = {
 		const selectedType = interaction.options.getString('type') ||
 			['normal', 'gamer', 'pachinko'][Math.floor(Math.random() * 3)];
 
+		// 少し遅らせて演出（1.5秒）
+		await new Promise(resolve => setTimeout(resolve, 1500));
+
 		// ランダムに運勢を選ぶ
 		const result = fortunes[Math.floor(Math.random() * fortunes.length)];
 
@@ -160,9 +166,9 @@ module.exports = {
 			pachinko: "パチンコ運"
 		};
 
-		await interaction.reply({
-			content: `🔮 ${username}さんの**${typeNameMap[selectedType]}**は...\n**${result.rank}**\n${comment}`,
-			ephemeral: false
+		// 返信を編集して結果を表示
+		await interaction.editReply({
+			content: `🔮 ${username}さんの**${typeNameMap[selectedType]}**は...\n**${result.rank}**\n${comment}`
 		});
 	},
 };
