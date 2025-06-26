@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
 
 const backlogData = {};
 
@@ -25,11 +25,7 @@ module.exports = {
 		.addSubcommand(subcommand =>
 			subcommand
 				.setName('delete')
-				.setDescription('積みゲーを削除します')
-				.addStringOption(option =>
-					option.setName('game')
-						.setDescription('削除したいゲーム名を入力してください')
-						.setRequired(true))),
+				.setDescription('積みゲーを削除します（選択式）')),
 	async execute(client, interaction) {
 		const guildId = interaction.guildId;
 		if (!guildId) {
@@ -65,15 +61,50 @@ module.exports = {
 			}
 		}
 		else if (subcommand === 'delete') {
-			const game = interaction.options.getString('game');
 			const list = backlogData[guildId];
-			const index = list.findIndex(g => g.toLowerCase() === game.toLowerCase());
-			if (index === -1) {
-				await interaction.reply(`❌ 「${game}」は積みゲーリストに存在しません。`);
-			} else {
-				list.splice(index, 1);
-				await interaction.reply(`✅ 「${game}」を積みゲーリストから削除しました。`);
+			if (list.length === 0) {
+				await interaction.reply({ content: '積みゲーリストは空です。削除できるゲームがありません。', ephemeral: true });
+				return;
 			}
+
+			// セレクトメニュー用の選択肢作成（最大25個まで）
+			const options = list.slice(0, 25).map((game, index) => ({
+				label: game.length > 25 ? game.slice(0, 22) + '...' : game,
+				description: `No.${index + 1}`,
+				value: game, // 選択時にこれが返る
+			}));
+
+			const row = new ActionRowBuilder()
+				.addComponents(
+					new StringSelectMenuBuilder()
+						.setCustomId('backlog_delete_select')
+						.setPlaceholder('削除するゲームを選択してください')
+						.addOptions(options)
+				);
+
+			await interaction.reply({ content: '削除したい積みゲーを選んでください。', components: [row], ephemeral: true });
 		}
+	},
+
+	// セレクトメニュー選択時の処理を追加で実装してください
+	async handleSelectMenu(interaction) {
+		if (interaction.customId !== 'backlog_delete_select') return;
+
+		const guildId = interaction.guildId;
+		if (!guildId) {
+			await interaction.reply({ content: 'サーバー専用です。', ephemeral: true });
+			return;
+		}
+
+		const selectedGame = interaction.values[0];
+		const list = backlogData[guildId];
+		const index = list.findIndex(g => g === selectedGame);
+		if (index === -1) {
+			await interaction.update({ content: `❌ 「${selectedGame}」は積みゲーリストに存在しません。`, components: [] });
+			return;
+		}
+
+		list.splice(index, 1);
+		await interaction.update({ content: `✅ 「${selectedGame}」を積みゲーリストから削除しました。`, components: [] });
 	},
 };
