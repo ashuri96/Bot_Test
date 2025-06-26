@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
 
-const backlogData = {};
+const backlogData = {}; // メモリ保存
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -26,13 +26,13 @@ module.exports = {
 			subcommand
 				.setName('delete')
 				.setDescription('積みゲーを削除します（選択式）')),
+
 	async execute(client, interaction) {
 		const guildId = interaction.guildId;
 		if (!guildId) {
 			await interaction.reply({ content: 'サーバー専用コマンドです。', ephemeral: true });
 			return;
 		}
-
 		if (!backlogData[guildId]) backlogData[guildId] = [];
 
 		const subcommand = interaction.options.getSubcommand();
@@ -67,26 +67,24 @@ module.exports = {
 				return;
 			}
 
-			// セレクトメニュー用の選択肢作成（最大25個まで）
 			const options = list.slice(0, 25).map((game, index) => ({
 				label: game.length > 25 ? game.slice(0, 22) + '...' : game,
 				description: `No.${index + 1}`,
-				value: game, // 選択時にこれが返る
+				value: game,
 			}));
 
-			const row = new ActionRowBuilder()
-				.addComponents(
-					new StringSelectMenuBuilder()
-						.setCustomId('backlog_delete_select')
-						.setPlaceholder('削除するゲームを選択してください')
-						.addOptions(options)
-				);
+			const row = new ActionRowBuilder().addComponents(
+				new StringSelectMenuBuilder()
+					.setCustomId('backlog_delete_select')
+					.setPlaceholder('削除するゲームを選択してください')
+					.addOptions(options)
+			);
 
 			await interaction.reply({ content: '削除したい積みゲーを選んでください。', components: [row], ephemeral: true });
 		}
 	},
 
-	// セレクトメニュー選択時の処理を追加で実装してください
+	// セレクトメニュー選択時はBot本体のinteractionCreateイベント内でこちらを呼んでください
 	async handleSelectMenu(interaction) {
 		if (interaction.customId !== 'backlog_delete_select') return;
 
@@ -99,6 +97,7 @@ module.exports = {
 		const selectedGame = interaction.values[0];
 		const list = backlogData[guildId];
 		const index = list.findIndex(g => g === selectedGame);
+
 		if (index === -1) {
 			await interaction.update({ content: `❌ 「${selectedGame}」は積みゲーリストに存在しません。`, components: [] });
 			return;
