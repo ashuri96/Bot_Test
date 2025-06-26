@@ -14,7 +14,8 @@ module.exports = {
 			'Lethal Company',
 			'原神',
 			'Apex',
-			'Six Siege'
+			'Six Siege',
+			'Splatoon3'
 		];
 
 		// ランダムに選択
