@@ -1,7 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
 
-// メモリ上のサーバーごとの積みゲーデータ
-// { guildId: [ 'ゲーム名1', 'ゲーム名2', ... ] }
 const backlogData = {};
 
 module.exports = {
@@ -23,8 +21,15 @@ module.exports = {
 		.addSubcommand(subcommand =>
 			subcommand
 				.setName('random')
-				.setDescription('積みゲーからランダムに1本おすすめします')),
-
+				.setDescription('積みゲーからランダムに1本おすすめします'))
+		.addSubcommand(subcommand =>
+			subcommand
+				.setName('delete')
+				.setDescription('積みゲーを削除します')
+				.addStringOption(option =>
+					option.setName('game')
+						.setDescription('削除したいゲーム名を入力してください')
+						.setRequired(true))),
 	async execute(client, interaction) {
 		const guildId = interaction.guildId;
 		if (!guildId) {
@@ -32,7 +37,6 @@ module.exports = {
 			return;
 		}
 
-		// 初期化
 		if (!backlogData[guildId]) backlogData[guildId] = [];
 
 		const subcommand = interaction.options.getSubcommand();
@@ -58,6 +62,17 @@ module.exports = {
 			} else {
 				const game = list[Math.floor(Math.random() * list.length)];
 				await interaction.reply(`🎲 今日やる積みゲーはこちら！\n**${game}**`);
+			}
+		}
+		else if (subcommand === 'delete') {
+			const game = interaction.options.getString('game');
+			const list = backlogData[guildId];
+			const index = list.findIndex(g => g.toLowerCase() === game.toLowerCase());
+			if (index === -1) {
+				await interaction.reply(`❌ 「${game}」は積みゲーリストに存在しません。`);
+			} else {
+				list.splice(index, 1);
+				await interaction.reply(`✅ 「${game}」を積みゲーリストから削除しました。`);
 			}
 		}
 	},
