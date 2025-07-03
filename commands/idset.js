@@ -15,7 +15,8 @@ module.exports = {
 					{ name: 'RiotID', value: 'RiotID' },
 					{ name: 'Steam', value: 'Steam' },
 					{ name: '原神', value: '原神' },
-					{ name: 'XBox', value: 'XBox' }
+					{ name: 'XBox', value: 'XBox' },
+					{ name: 'Switch', value: 'Swicth' }
 				)
 		)
 		.addStringOption(option =>
